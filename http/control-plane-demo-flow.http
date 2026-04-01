@@ -1,0 +1,57 @@
+@baseUrl = http://localhost:8081
+@json = application/json
+
+### Create demo API key
+# Save the returned `id` and `plainTextKey` from the response body.
+POST {{baseUrl}}/api/v1/api-keys
+Content-Type: {{json}}
+
+{
+  "name": "presentation-key",
+  "owner": "demo-operator",
+  "rateLimitPerMinute": 1200,
+  "expiresAt": "2026-12-31T00:00:00Z"
+}
+
+### Create demo route
+POST {{baseUrl}}/api/v1/routes
+Content-Type: {{json}}
+
+{
+  "name": "presentation-route",
+  "method": "GET",
+  "pathPattern": "/api/v1/demo",
+  "upstreamUrl": "http://demo-service:9000",
+  "requiresAuth": true,
+  "cacheEnabled": false,
+  "rateLimitPerMinute": 100,
+  "status": "healthy",
+  "timeoutMillis": 2000,
+  "stripPrefix": "/api"
+}
+
+### Create demo policy
+POST {{baseUrl}}/api/v1/policies
+Content-Type: {{json}}
+
+{
+  "name": "presentation-rate-limit",
+  "scope": "tenant",
+  "conditionExpression": "requestsPerMinute > 100",
+  "action": "throttle",
+  "priority": 10,
+  "enabled": true,
+  "routePattern": "/api/v1/demo"
+}
+
+### Re-check overview after demo setup
+GET {{baseUrl}}/api/v1/overview
+
+### Re-list routes after demo setup
+GET {{baseUrl}}/api/v1/routes
+
+### Re-list policies after demo setup
+GET {{baseUrl}}/api/v1/policies
+
+### Re-list API keys after demo setup
+GET {{baseUrl}}/api/v1/api-keys

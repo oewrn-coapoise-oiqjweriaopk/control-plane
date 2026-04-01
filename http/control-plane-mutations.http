@@ -1,0 +1,51 @@
+@baseUrl = http://localhost:8081
+@json = application/json
+@routeId = 1
+@policyId = 1
+@apiKeyId = 1
+
+### Get route by id
+GET {{baseUrl}}/api/v1/routes/{{routeId}}
+
+### Update route
+PUT {{baseUrl}}/api/v1/routes/{{routeId}}
+Content-Type: {{json}}
+
+{
+  "name": "users-by-id-updated",
+  "method": "GET",
+  "pathPattern": "/api/v2/users/{id}",
+  "upstreamUrl": "http://user-svc:8080",
+  "requiresAuth": true,
+  "cacheEnabled": true,
+  "rateLimitPerMinute": 1500,
+  "status": "healthy",
+  "timeoutMillis": 2500,
+  "stripPrefix": "/api"
+}
+
+### Get policy by id
+GET {{baseUrl}}/api/v1/policies/{{policyId}}
+
+### Update policy
+PUT {{baseUrl}}/api/v1/policies/{{policyId}}
+Content-Type: {{json}}
+
+{
+  "name": "tenant-rate-limit-updated",
+  "scope": "tenant",
+  "conditionExpression": "requestsPerMinute > route.rateLimit",
+  "action": "throttle",
+  "priority": 5,
+  "enabled": true,
+  "routePattern": "/api/v2/**"
+}
+
+### Revoke API key
+POST {{baseUrl}}/api/v1/api-keys/{{apiKeyId}}/revoke
+
+### Delete route by id
+DELETE {{baseUrl}}/api/v1/routes/{{routeId}}
+
+### Delete policy by id
+DELETE {{baseUrl}}/api/v1/policies/{{policyId}}

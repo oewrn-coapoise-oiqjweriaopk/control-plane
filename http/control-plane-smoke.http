@@ -1,0 +1,22 @@
+@baseUrl = http://localhost:8081
+
+### Health
+GET {{baseUrl}}/actuator/health
+
+### Overview
+GET {{baseUrl}}/api/v1/overview
+
+### List routes
+GET {{baseUrl}}/api/v1/routes
+
+### List policies
+GET {{baseUrl}}/api/v1/policies
+
+### List API keys
+GET {{baseUrl}}/api/v1/api-keys
+
+### List users
+GET {{baseUrl}}/api/v1/users
+
+### List nodes
+GET {{baseUrl}}/api/v1/nodes
