@@ -1,0 +1,113 @@
+name: Docs Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "pom.xml"
+      - "src/main/**"
+      - "docs/github-pages/**"
+      - ".github/workflows/docs-pages.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: gateway_control
+          POSTGRES_USER: gateway
+          POSTGRES_PASSWORD: gateway
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gateway -d gateway_control"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Start control plane
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/gateway_control?options=-c%20TimeZone%3DUTC
+          DB_USERNAME: gateway
+          DB_PASSWORD: gateway
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          SERVER_PORT: 8081
+          SEED_DEMO_DATA: true
+        run: |
+          mvn -B spring-boot:run > target/docs-pages-app.log 2>&1 &
+          echo $! > target/docs-pages-app.pid
+
+      - name: Wait for OpenAPI endpoint
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8081/v3/api-docs > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Control plane did not become ready in time."
+          cat target/docs-pages-app.log
+          exit 1
+
+      - name: Build Pages artifact
+        run: |
+          mkdir -p target/pages
+          cp docs/github-pages/index.html target/pages/index.html
+          curl --fail --silent http://127.0.0.1:8081/v3/api-docs -o target/pages/openapi.json
+
+      - name: Stop control plane
+        if: always()
+        run: |
+          if [ -f target/docs-pages-app.pid ]; then
+            kill "$(cat target/docs-pages-app.pid)" || true
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: target/pages
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

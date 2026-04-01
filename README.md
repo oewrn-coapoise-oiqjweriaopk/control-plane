@@ -90,6 +90,35 @@ To verify it is working:
 3. Call `http://localhost:8081/api/v1/routes` and confirm the seeded route list is returned.
 4. Start the frontend and confirm it loads data instead of showing the control-plane unavailable banner.
 
+## OpenAPI Docs
+
+Springdoc OpenAPI is enabled for the control plane.
+
+- Swagger UI: `http://localhost:8081/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8081/v3/api-docs`
+- OpenAPI YAML: `http://localhost:8081/v3/api-docs.yaml`
+
+The generated documentation includes summaries and schema descriptions for the control-plane endpoints and request payloads.
+
+To view the docs locally:
+
+1. Start the control plane.
+2. Open `http://localhost:8081/swagger-ui.html` in your browser.
+3. If you only want the raw spec, open `http://localhost:8081/v3/api-docs`.
+
+## GitHub Pages API Docs
+
+The repository now includes a Pages deployment workflow at [`.github/workflows/docs-pages.yml`](/home/ton3s/gateway-service/control-plane-service/.github/workflows/docs-pages.yml).
+
+It:
+
+- starts PostgreSQL and Redis in GitHub Actions
+- boots the control plane
+- downloads the generated OpenAPI JSON from `/v3/api-docs`
+- publishes a static Swagger UI site to GitHub Pages
+
+Before it will publish publicly, set GitHub Pages in the repository settings to use `GitHub Actions` as the build source.
+
 If the app fails at startup, check the usual causes first:
 
 - PostgreSQL is not running on `localhost:5432`

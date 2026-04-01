@@ -31,6 +31,12 @@ management:
       exposure:
         include: health,info,metrics
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 app:
   seed-demo-data: ${SEED_DEMO_DATA:true}
   cors:
