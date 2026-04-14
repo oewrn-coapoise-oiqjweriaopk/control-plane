@@ -23,19 +23,22 @@ public class OverviewService {
     private final ApiKeyRepository apiKeyRepository;
     private final GatewayNodeRepository gatewayNodeRepository;
     private final AdminUserRepository adminUserRepository;
+    private final LogService logService;
 
     public OverviewService(
             RouteConfigRepository routeRepository,
             PolicyRuleRepository policyRepository,
             ApiKeyRepository apiKeyRepository,
             GatewayNodeRepository gatewayNodeRepository,
-            AdminUserRepository adminUserRepository
+            AdminUserRepository adminUserRepository,
+            LogService logService
     ) {
         this.routeRepository = routeRepository;
         this.policyRepository = policyRepository;
         this.apiKeyRepository = apiKeyRepository;
         this.gatewayNodeRepository = gatewayNodeRepository;
         this.adminUserRepository = adminUserRepository;
+        this.logService = logService;
     }
 
     public OverviewResponse getOverview() {
@@ -59,6 +62,9 @@ public class OverviewService {
         double averageMemory = nodes.stream().mapToInt(GatewayNode::getMemoryUsage).average().orElse(0);
         long totalConnections = nodes.stream().mapToLong(GatewayNode::getActiveConnections).sum();
 
+        // Get recent logs (up to 50)
+        var recentLogs = logService.getRecentLogs(50);
+
         return new OverviewResponse(
                 routes.size(),
                 healthyRoutes,
@@ -70,7 +76,9 @@ public class OverviewService {
                 averageMemory,
                 totalConnections,
                 routes.stream().collect(Collectors.groupingBy(RouteConfig::getStatus, Collectors.counting())),
-                nodes.stream().collect(Collectors.groupingBy(GatewayNode::getStatus, Collectors.counting()))
+                nodes.stream().collect(Collectors.groupingBy(GatewayNode::getStatus, Collectors.counting())),
+                recentLogs
         );
     }
 }
+

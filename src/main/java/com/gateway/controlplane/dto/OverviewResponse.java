@@ -2,6 +2,7 @@ package com.gateway.controlplane.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.List;
 import java.util.Map;
 
 @Schema(description = "Aggregated overview metrics for the gateway control plane.")
@@ -27,6 +28,8 @@ public record OverviewResponse(
         @Schema(description = "Route counts grouped by status.")
         Map<String, Long> routesByStatus,
         @Schema(description = "Node counts grouped by status.")
-        Map<String, Long> nodesByStatus
+        Map<String, Long> nodesByStatus,
+        @Schema(description = "Recent logs from data-plane (last 50)")
+        List<LogEntryResponse> recentLogs
 ) {
 }

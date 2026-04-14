@@ -2,6 +2,7 @@ package com.gateway.controlplane.service;
 
 import com.gateway.controlplane.dto.ApiKeyCreateRequest;
 import com.gateway.controlplane.dto.ApiKeyResponse;
+import com.gateway.controlplane.dto.RuntimeApiKeyProjection;
 import com.gateway.controlplane.entity.ApiKey;
 import com.gateway.controlplane.exception.ResourceNotFoundException;
 import com.gateway.controlplane.repository.ApiKeyRepository;
@@ -60,9 +61,9 @@ public class ApiKeyService {
     }
 
     public void syncRedis() {
-        List<ApiKeyResponse> payload = apiKeyRepository.findAll().stream()
+        List<RuntimeApiKeyProjection> payload = apiKeyRepository.findAll().stream()
                 .filter(apiKey -> "active".equalsIgnoreCase(apiKey.getStatus()))
-                .map(apiKey -> toResponse(apiKey, null))
+                .map(this::toRuntimeProjection)
                 .toList();
         redisProjectionService.publishApiKeys(payload);
     }
@@ -79,6 +80,21 @@ public class ApiKeyService {
                 apiKey.getLastUsedAt(),
                 apiKey.getCreatedAt(),
                 plainTextKey
+        );
+    }
+
+    private RuntimeApiKeyProjection toRuntimeProjection(ApiKey apiKey) {
+        return new RuntimeApiKeyProjection(
+                apiKey.getId(),
+                apiKey.getName(),
+                apiKey.getKeyPrefix(),
+                apiKey.getKeyHash(),
+                apiKey.getOwner(),
+                apiKey.getStatus(),
+                apiKey.getRateLimitPerMinute(),
+                apiKey.getExpiresAt(),
+                apiKey.getLastUsedAt(),
+                apiKey.getCreatedAt()
         );
     }
 
