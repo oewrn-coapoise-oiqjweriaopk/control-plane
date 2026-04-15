@@ -165,5 +165,7 @@ If this service moves into its own GitHub repository, these workflows will work 
 - `POST /api/v1/api-keys/{id}/revoke`
 - `GET /api/v1/users`
 - `GET /api/v1/nodes`
+- `POST /api/v1/nodes/heartbeat`
+- `GET /api/v1/metrics`
 
 On startup the app seeds demo data when the database is empty so the frontend has immediate data to render.

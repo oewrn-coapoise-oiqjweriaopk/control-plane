@@ -13,10 +13,16 @@ public class ReferenceDataService {
 
     private final AdminUserRepository adminUserRepository;
     private final GatewayNodeRepository gatewayNodeRepository;
+    private final NodeHeartbeatService nodeHeartbeatService;
 
-    public ReferenceDataService(AdminUserRepository adminUserRepository, GatewayNodeRepository gatewayNodeRepository) {
+    public ReferenceDataService(
+            AdminUserRepository adminUserRepository,
+            GatewayNodeRepository gatewayNodeRepository,
+            NodeHeartbeatService nodeHeartbeatService
+    ) {
         this.adminUserRepository = adminUserRepository;
         this.gatewayNodeRepository = gatewayNodeRepository;
+        this.nodeHeartbeatService = nodeHeartbeatService;
     }
 
     public List<AdminUser> findUsers() {
@@ -24,6 +30,6 @@ public class ReferenceDataService {
     }
 
     public List<GatewayNode> findNodes() {
-        return gatewayNodeRepository.findAll();
+        return nodeHeartbeatService.enrichNodesWithComputedStatus(gatewayNodeRepository.findAll());
     }
 }

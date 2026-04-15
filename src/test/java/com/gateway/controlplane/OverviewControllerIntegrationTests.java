@@ -126,7 +126,11 @@ class OverviewControllerIntegrationTests extends IntegrationTestSupport {
         node.setCpuUsage(cpu);
         node.setMemoryUsage(memory);
         node.setActiveConnections(connections);
-        node.setLastHeartbeatAt(Instant.parse("2026-04-01T00:00:00Z"));
+        node.setLastHeartbeatAt(switch (status) {
+            case "ok", "healthy" -> Instant.now().minusSeconds(10);
+            case "warn" -> Instant.now().minusSeconds(45);
+            default -> Instant.now().minusSeconds(120);
+        });
         return node;
     }
 

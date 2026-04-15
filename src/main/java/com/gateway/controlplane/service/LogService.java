@@ -3,8 +3,6 @@ package com.gateway.controlplane.service;
 import com.gateway.controlplane.dto.LogEntryResponse;
 import com.gateway.controlplane.entity.LogEntry;
 import com.gateway.controlplane.repository.LogEntryRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,13 +17,16 @@ import java.util.stream.Collectors;
  * Logs are stored both in Redis (for real-time access) and in the database (for persistence).
  * The service syncs logs from Redis to the database periodically.
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class LogService {
 
     private final LogEntryRepository logRepository;
     private final RedisTemplate<String, String> redisTemplate;
+
+    public LogService(LogEntryRepository logRepository, RedisTemplate<String, String> redisTemplate) {
+        this.logRepository = logRepository;
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final String LOGS_REDIS_KEY = "gateway:logs:entries";
     private static final int MAX_LOGS_TO_KEEP = 100;
@@ -105,7 +106,7 @@ public class LogService {
     public void cleanupOldLogs() {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
         // Implementation depends on JPA custom query for deletion
-        log.info("Cleaning up logs older than 7 days");
+        System.out.println("Cleaning up logs older than 7 days");
     }
 
     /**

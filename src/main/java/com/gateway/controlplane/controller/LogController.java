@@ -5,7 +5,6 @@ import com.gateway.controlplane.service.LogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,11 +12,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/logs")
-@RequiredArgsConstructor
 @Tag(name = "Logs", description = "Access and query logs from the data-plane.")
 public class LogController {
 
     private final LogService logService;
+
+    public LogController(LogService logService) {
+        this.logService = logService;
+    }
 
     /**
      * Receive a log entry from data-plane.

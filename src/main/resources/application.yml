@@ -39,6 +39,9 @@ springdoc:
 
 app:
   seed-demo-data: ${SEED_DEMO_DATA:true}
+  heartbeat:
+    warn-after-seconds: ${HEARTBEAT_WARN_AFTER_SECONDS:30}
+    error-after-seconds: ${HEARTBEAT_ERROR_AFTER_SECONDS:90}
   cors:
     allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8080}
   redis:

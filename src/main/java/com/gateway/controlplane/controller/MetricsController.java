@@ -3,10 +3,10 @@ package com.gateway.controlplane.controller;
 import com.gateway.controlplane.dto.MetricsResponse;
 import com.gateway.controlplane.dto.MetricsSnapshotRequest;
 import com.gateway.controlplane.service.MetricsService;
+import com.gateway.controlplane.service.NodeHeartbeatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,11 +16,19 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1")
-@RequiredArgsConstructor
 @Tag(name = "Metrics", description = "Real-time metrics from gateway nodes")
 public class MetricsController {
 
     private final MetricsService metricsService;
+    private final NodeHeartbeatService nodeHeartbeatService;
+
+    public MetricsController(
+            MetricsService metricsService,
+            NodeHeartbeatService nodeHeartbeatService
+    ) {
+        this.metricsService = metricsService;
+        this.nodeHeartbeatService = nodeHeartbeatService;
+    }
 
     /**
      * Receive metrics snapshot from a data-plane node.
@@ -35,6 +43,9 @@ public class MetricsController {
             @RequestBody MetricsSnapshotRequest snapshot
     ) {
         metricsService.recordMetrics(snapshot);
+        if (nodeId.equals(snapshot.nodeId())) {
+            nodeHeartbeatService.recordHeartbeatFromMetrics(snapshot);
+        }
     }
 
     /**

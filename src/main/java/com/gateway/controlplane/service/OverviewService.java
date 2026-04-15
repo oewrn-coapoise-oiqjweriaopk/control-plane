@@ -11,8 +11,6 @@ import com.gateway.controlplane.repository.RouteConfigRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +22,7 @@ public class OverviewService {
     private final GatewayNodeRepository gatewayNodeRepository;
     private final AdminUserRepository adminUserRepository;
     private final LogService logService;
+    private final NodeHeartbeatService nodeHeartbeatService;
 
     public OverviewService(
             RouteConfigRepository routeRepository,
@@ -31,7 +30,8 @@ public class OverviewService {
             ApiKeyRepository apiKeyRepository,
             GatewayNodeRepository gatewayNodeRepository,
             AdminUserRepository adminUserRepository,
-            LogService logService
+            LogService logService,
+            NodeHeartbeatService nodeHeartbeatService
     ) {
         this.routeRepository = routeRepository;
         this.policyRepository = policyRepository;
@@ -39,11 +39,12 @@ public class OverviewService {
         this.gatewayNodeRepository = gatewayNodeRepository;
         this.adminUserRepository = adminUserRepository;
         this.logService = logService;
+        this.nodeHeartbeatService = nodeHeartbeatService;
     }
 
     public OverviewResponse getOverview() {
         List<RouteConfig> routes = routeRepository.findAll();
-        List<GatewayNode> nodes = gatewayNodeRepository.findAll();
+        List<GatewayNode> nodes = nodeHeartbeatService.enrichNodesWithComputedStatus(gatewayNodeRepository.findAll());
 
         long healthyRoutes = routes.stream()
                 .filter(route -> "healthy".equalsIgnoreCase(route.getStatus()))
@@ -81,4 +82,3 @@ public class OverviewService {
         );
     }
 }
-
