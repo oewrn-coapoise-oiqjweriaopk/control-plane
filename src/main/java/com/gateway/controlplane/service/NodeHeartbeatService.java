@@ -17,15 +17,18 @@ public class NodeHeartbeatService {
     private final GatewayNodeRepository gatewayNodeRepository;
     private final Duration warnAfter;
     private final Duration errorAfter;
+    private final Duration pruneAfter;
 
     public NodeHeartbeatService(
             GatewayNodeRepository gatewayNodeRepository,
             @Value("${app.heartbeat.warn-after-seconds:30}") long warnAfterSeconds,
-            @Value("${app.heartbeat.error-after-seconds:90}") long errorAfterSeconds
+            @Value("${app.heartbeat.error-after-seconds:90}") long errorAfterSeconds,
+            @Value("${app.heartbeat.prune-after-seconds:300}") long pruneAfterSeconds
     ) {
         this.gatewayNodeRepository = gatewayNodeRepository;
         this.warnAfter = Duration.ofSeconds(Math.max(1, warnAfterSeconds));
         this.errorAfter = Duration.ofSeconds(Math.max(1, errorAfterSeconds));
+        this.pruneAfter = Duration.ofSeconds(Math.max(1, pruneAfterSeconds));
     }
 
     public GatewayNode recordHeartbeat(NodeHeartbeatRequest request) {
@@ -81,6 +84,11 @@ public class NodeHeartbeatService {
             node.setStatus(computeStatus(node.getLastHeartbeatAt(), now));
         }
         return nodes;
+    }
+
+    public int pruneStaleNodes() {
+        Instant cutoff = Instant.now().minus(pruneAfter);
+        return gatewayNodeRepository.deleteStaleNodes(cutoff);
     }
 
     public String computeStatus(Instant lastHeartbeatAt) {

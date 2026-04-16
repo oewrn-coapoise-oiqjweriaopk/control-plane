@@ -30,6 +30,7 @@ public class ReferenceDataService {
     }
 
     public List<GatewayNode> findNodes() {
+        nodeHeartbeatService.pruneStaleNodes();
         return nodeHeartbeatService.enrichNodesWithComputedStatus(gatewayNodeRepository.findAll());
     }
 }

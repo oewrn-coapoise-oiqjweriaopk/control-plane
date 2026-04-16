@@ -43,6 +43,7 @@ public class OverviewService {
     }
 
     public OverviewResponse getOverview() {
+        nodeHeartbeatService.pruneStaleNodes();
         List<RouteConfig> routes = routeRepository.findAll();
         List<GatewayNode> nodes = nodeHeartbeatService.enrichNodesWithComputedStatus(gatewayNodeRepository.findAll());
 
